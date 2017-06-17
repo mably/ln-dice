@@ -1,4 +1,4 @@
-# Slack tipping bot using LN for payments
+# Dice gambling service using LN for payments
 
 ## Installation
 
@@ -13,7 +13,7 @@
 Fetch sources from the git repository:
 
 ```
-git clone https://github.com/CryptoFR/ln-tip-slack.git
+git clone https://github.com/mably/ln-dice.git
 ```
 Move into the newly created directory:
 

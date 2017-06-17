@@ -1,14 +1,14 @@
-// public/slacktipapp.js
-var slacktipapp = angular.module("slacktipapp", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
+// public/diceapp.js
+var diceapp = angular.module("diceapp", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
 
-slacktipapp.config(["localStorageServiceProvider", function (localStorageServiceProvider) {
+diceapp.config(["localStorageServiceProvider", function (localStorageServiceProvider) {
 	localStorageServiceProvider
-		.setPrefix("slacktip")
+		.setPrefix("dice")
 		.setStorageType("localStorage")
 		.setNotify(true, true);
 }]);
 
-slacktipapp.config(["ngToastProvider", function (ngToast) {
+diceapp.config(["ngToastProvider", function (ngToast) {
 	ngToast.configure({
 		// verticalPosition: "bottom",
 		// horizontalPosition: "center"
@@ -16,7 +16,7 @@ slacktipapp.config(["ngToastProvider", function (ngToast) {
 	});
 }]);
 
-slacktipapp.constant("config", {
+diceapp.constant("config", {
 	keys: {
 		AUTO_REFRESH: "autorefresh"
 	},

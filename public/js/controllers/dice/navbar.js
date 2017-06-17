@@ -1,8 +1,8 @@
 (function () {
 
-	slacktipapp.controller("NavBarCtrl", ["$rootScope", "$scope", "$timeout", "$uibModal", "slacktip", "config", controller]);
+	diceapp.controller("NavBarCtrl", ["$rootScope", "$scope", "$timeout", "$uibModal", "dice", "config", controller]);
 
-	function controller($rootScope, $scope, $timeout, $uibModal, slacktip, config) {
+	function controller($rootScope, $scope, $timeout, $uibModal, dice, config) {
 
 		var $ctrl = this;
 
@@ -12,11 +12,11 @@
 		};
 
 		$scope.logout = function () {
-			slacktip.logout().then(function (response) {
+			dice.logout().then(function (response) {
 				$rootScope.$broadcast(config.events.USER_REFRESH, response);
 			}, function (err) {
 				console.log(err);
-				slacktip.alert(err);
+				dice.alert(err);
 			});
 		};
 
@@ -28,7 +28,7 @@
 					animation: true,
 					ariaLabelledBy: "sendtip-modal-title",
 					ariaDescribedBy: "sendtip-modal-body",
-					templateUrl: "templates/partials/slacktip/sendtip.html",
+					templateUrl: "templates/partials/dice/sendtip.html",
 					controller: "ModalSendTipCtrl",
 					controllerAs: "$ctrl",
 					size: "lg",
@@ -56,7 +56,7 @@
 			} else {
 
 				var message = "You need to be authentified to use this service.";
-				slacktip.alert(message);
+				dice.alert(message);
 
 			}
 

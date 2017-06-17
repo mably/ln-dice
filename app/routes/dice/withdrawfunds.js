@@ -1,12 +1,12 @@
-// app/routes/slacktip/withdrawfunds.js
+// app/routes/dice/withdrawfunds.js
 
-const debug = require("debug")("lncliweb:routes:slacktip");
+const debug = require("debug")("lncliweb:routes:dice");
 const logger = require("winston");
 
-module.exports = function (slacktip) {
+module.exports = function (dice) {
 	return function (req, res) {
 		if (req.session.user) {
-			slacktip.withdrawFunds(req.session.user, req.body.payreq).then(function (response) {
+			dice.withdrawFunds(req.session.user, req.body.payreq).then(function (response) {
 				res.json(response);
 			}, function (err) {
 				res.status(400).send({ error: err });

@@ -1,7 +1,7 @@
 (function () {
 	"use strict";
 
-	slacktipapp.service("slacktip", ["$rootScope", "$filter", "$http", "$timeout", "$interval", "$q", "ngToast", "localStorageService", "config", "uuid", "webNotification", Service]);
+	diceapp.service("dice", ["$rootScope", "$filter", "$http", "$timeout", "$interval", "$q", "ngToast", "localStorageService", "config", "uuid", "webNotification", Service]);
 
 	function Service($rootScope, $filter, $http, $timeout, $interval, $q, ngToast, localStorageService, config, uuid, webNotification) {
 
@@ -9,10 +9,10 @@
 
 		var API = {
 			LOGOUT: "/api/logout",
-			GETUSER: "/api/slacktip/getuser",
-			ADDINVOICE: "/api/slacktip/addinvoice",
-			WITHDRAWFUNDS: "/api/slacktip/withdrawfunds",
-			SENDTIP: "/api/slacktip/sendtip"
+			GETUSER: "/api/dice/getuser",
+			ADDINVOICE: "/api/dice/addinvoice",
+			WITHDRAWFUNDS: "/api/dice/withdrawfunds",
+			SENDTIP: "/api/dice/sendtip"
 		};
 
 		var configCache = null;

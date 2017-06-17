@@ -1,8 +1,8 @@
 (function () {
 
-	slacktipapp.controller("ModalWithdrawFundsCtrl", ["$rootScope", "$scope", "$uibModalInstance", "defaults", "slacktip", "config", controller]);
+	diceapp.controller("ModalWithdrawFundsCtrl", ["$rootScope", "$scope", "$uibModalInstance", "defaults", "dice", "config", controller]);
 
-	function controller($rootScope, $scope, $uibModalInstance, defaults, slacktip, config) {
+	function controller($rootScope, $scope, $uibModalInstance, defaults, dice, config) {
 
 		var $ctrl = this;
 
@@ -12,12 +12,12 @@
 
 		$ctrl.ok = function () {
 			$ctrl.spinner++;
-			slacktip.withdrawFunds($ctrl.values.payreq).then(function (response) {
+			dice.withdrawFunds($ctrl.values.payreq).then(function (response) {
 				$ctrl.spinner--;
 				console.log("WithdrawFunds", response);
 				if (response.data.error) {
 					if ($ctrl.isClosed) {
-						slacktip.alert(response.data.error);
+						dice.alert(response.data.error);
 					} else {
 						$ctrl.warning = response.data.error;
 					}
@@ -31,7 +31,7 @@
 				console.log(err);
 				var errmsg = err.data.error || err.statusText;
 				if ($ctrl.isClosed) {
-					slacktip.alert(errmsg);
+					dice.alert(errmsg);
 				} else {
 					$ctrl.warning = errmsg;
 				}

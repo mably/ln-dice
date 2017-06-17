@@ -1,29 +1,29 @@
 <div>
 	<div class="modal-header">
-		<h3 class="modal-title" id="sendtip-modal-title">Send tip <i class="fa fa-spinner fa-spin" ng-show="$ctrl.spinner > 0"></i></h3>
+		<h3 class="modal-title" id="bet-modal-title">Send tip <i class="fa fa-spinner fa-spin" ng-show="$ctrl.spinner > 0"></i></h3>
 	</div>
-	<div class="modal-body" id="sendtip-modal-body">
+	<div class="modal-body" id="bet-modal-body">
 		<div class="alert alert-warning" role="alert" ng-show="$ctrl.warning">
 			<button type="button" class="close" ng-click="$ctrl.dismissAlert()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 			{{ $ctrl.warning }}
 		</div>
 		<form>
 			<div class="form-group">
-				<label for="sendtip-userid">Slack user id</label>
-				<input type="text" class="form-control" id="sendtip-userid" placeholder="slack user id" ng-model="$ctrl.values.userid">
+				<label for="bet-amount">Bet amount</label>
+				<input type="text" class="form-control" id="bet-amount" placeholder="bet amount" ng-model="$ctrl.values.amount">
 			</div>
 			<div class="form-group">
-				<label for="sendtip-teamid">Slack team id</label>
-				<input type="text" class="form-control" id="sendtip-teamid" placeholder="slack team id" ng-model="$ctrl.values.teamid">
+				<label for="bet-factor">Factor</label>
+				<input type="text" class="form-control" id="bet-factor" placeholder="bet factor" ng-model="$ctrl.values.factor">
 			</div>
 			<div class="form-group">
-				<label for="sendtip-amount">Tip amount</label>
-				<input type="text" class="form-control" id="sendtip-amount" placeholder="tip amount" ng-model="$ctrl.values.amount">
+				<label for="bet-choice">Choice</label>
+				<input type="text" class="form-control" id="bet-choice" placeholder="bet choice" ng-model="$ctrl.values.choice">
 			</div>
 		</form>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">Send tip</button>
+		<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">Bet</button>
 		<button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
 	</div>
 <div>

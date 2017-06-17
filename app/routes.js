@@ -6,7 +6,7 @@ const request = require("request");
 const graphviz = require("graphviz");
 
 // expose the routes to our app with module.exports
-module.exports = function (app, lightning, slacktip, db) {
+module.exports = function (app, lightning, dice, db) {
 
 	// api ---------------------------------------------------------------------
 
@@ -375,23 +375,17 @@ module.exports = function (app, lightning, slacktip, db) {
 		});
 	});
 
-	// slack oauth callback handler
-	app.get("/oauth/slack/callback", require("./routes/slacktip/slack-callback.js")(slacktip));
-
-	// get slack user info
-	app.get("/api/slacktip/getuser", require("./routes/slacktip/getuser.js")(slacktip));
-
-	// handle slack lntip command
-	app.post("/api/slacktip/tip", require("./routes/slacktip/tip.js")(slacktip));
+	// get dice user info
+	app.get("/api/dice/getuser", require("./routes/dice/getuser.js")(dice));
 
 	// addinvoice
-	app.post("/api/slacktip/addinvoice", require("./routes/slacktip/addinvoice.js")(slacktip));
+	app.post("/api/dice/addinvoice", require("./routes/dice/addinvoice.js")(dice));
 
 	// withdraw funds
-	app.post("/api/slacktip/withdrawfunds", require("./routes/slacktip/withdrawfunds.js")(slacktip));
+	app.post("/api/dice/withdrawfunds", require("./routes/dice/withdrawfunds.js")(dice));
 
-	// web app send tip
-	app.post("/api/slacktip/sendtip", require("./routes/slacktip/sendtip.js")(slacktip));
+	// web app dice bet
+	app.post("/api/dice/bet", require("./routes/dice/bet.js")(dice));
 
 	// session logout ----------------------------------------------------------
 	app.get("/api/logout", function (req, res) {

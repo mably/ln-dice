@@ -1,8 +1,8 @@
 (function () {
 
-	slacktipapp.controller("ModalAddInvoiceCtrl", ["$scope", "$uibModalInstance", "defaults", "slacktip", controller]);
+	diceapp.controller("ModalSendTipCtrl", ["$scope", "$uibModalInstance", "defaults", "dice", controller]);
 
-	function controller($scope, $uibModalInstance, defaults, slacktip) {
+	function controller($scope, $uibModalInstance, defaults, dice) {
 
 		var $ctrl = this;
 
@@ -12,24 +12,25 @@
 
 		$ctrl.ok = function () {
 			$ctrl.spinner++;
-			slacktip.addInvoice($ctrl.values.memo, $ctrl.values.value).then(function (response) {
+			dice.sendTip($ctrl.values.userid, $ctrl.values.teamid, $ctrl.values.amount).then(function (response) {
 				$ctrl.spinner--;
-				console.log("AddInvoice", response);
+				console.log("SendTip", response);
 				if (response.data.error) {
 					if ($ctrl.isClosed) {
-						slacktip.alert(response.data.error);
+						dice.alert(response.data.error);
 					} else {
 						$ctrl.warning = response.data.error;
 					}
 				} else {
-					$ctrl.invoice = response.data.payment_request;
+					$ctrl.warning = null;
+					$uibModalInstance.close($ctrl.values);
 				}
 			}, function (err) {
 				$ctrl.spinner--;
 				console.log(err);
 				var errmsg = err.message || err.statusText;
 				if ($ctrl.isClosed) {
-					slacktip.alert(errmsg);
+					dice.alert(errmsg);
 				} else {
 					$ctrl.warning = errmsg;
 				}
@@ -48,7 +49,5 @@
 			console.log("modal.closing: " + (closed ? "close" : "dismiss") + "(" + reason + ")");
 			$ctrl.isClosed = true;
 		});
-
 	}
-
 })();

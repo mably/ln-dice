@@ -1,12 +1,12 @@
-// app/routes/slacktip/getuser.js
+// app/routes/dice/getuser.js
 
-const debug = require("debug")("lncliweb:routes:slacktip");
+const debug = require("debug")("lncliweb:routes:dice");
 
-module.exports = function (slacktip) {
+module.exports = function (dice) {
 	return function (req, res) {
 		if (req.session.user) {
 			debug(req.session.user);
-			slacktip.getUser(req.session.user.identity).then(function (user) {
+			dice.getUser(req.session.user.identity).then(function (user) {
 				res.json(user);
 			}, function (err) {
 				res.json({ message: err.message });

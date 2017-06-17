@@ -2,8 +2,6 @@
 const debug = require("debug")("lncliweb:server");
 const express  = require("express");
 const session = require("express-session");
-const Grant = require("grant-express");
-const grant = new Grant(require("../config/grant-config.js"));
 const bodyParser = require("body-parser");         // pull information from HTML POST (express4)
 const methodOverride = require("method-override"); // simulate DELETE and PUT (express4)
 
@@ -41,8 +39,8 @@ module.exports = function (program) {
 	// init lnd module =================
 	const lnd = require("./lnd")(lightning);
 
-	// init slacktip module =================
-	const slacktip = require("./slacktip")(lightning, lnd, db, module, require("../config/slack-config"));
+	// init dice module =================
+	const dice = require("./dice")(lightning, lnd, db, module, require("../config/dice-config"));
 
 	// app creation =================
 	const app = express();                                          // create our app w/ express
@@ -50,7 +48,6 @@ module.exports = function (program) {
 
 	// app configuration =================
 	app.use(require("./cors"));                                     // enable CORS headers
-	app.use(grant);                                                 // mount grant
 	app.use(["/lnd.html", "/api/lnd/"], basicauth);                 // enable basic authentication for lnd apis
 	app.use(express.static(__dirname + "/../public"));              // set the static files location /public/img will be /img for users
 	app.use(bodyParser.urlencoded({ extended: "true" }));           // parse application/x-www-form-urlencoded
@@ -81,7 +78,7 @@ module.exports = function (program) {
 	require("./sockets")(io, lightning, lnd, program.user, program.pwd, program.limituser, program.limitpwd, lndLogfile);
 
 	// setup routes =================
-	require("./routes")(app, lightning, slacktip, db);
+	require("./routes")(app, lightning, dice, db);
 
 	// listen (start app with node server.js) ======================================
 	server.listen(module.serverPort, module.serverHost);

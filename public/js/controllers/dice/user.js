@@ -1,8 +1,8 @@
 (function () {
 
-	slacktipapp.controller("UserCtrl", ["$rootScope", "$scope", "$timeout", "$uibModal", "slacktip", "config", controller]);
+	diceapp.controller("UserCtrl", ["$rootScope", "$scope", "$timeout", "$uibModal", "dice", "config", controller]);
 
-	function controller($rootScope, $scope, $timeout, $uibModal, slacktip, config) {
+	function controller($rootScope, $scope, $timeout, $uibModal, dice, config) {
 
 		var $ctrl = this;
 
@@ -12,7 +12,7 @@
 		$scope.refresh = function () {
 			$scope.spinner++;
 			$scope.updateNextRefresh();
-			slacktip.getUser(false).then(function (response) {
+			dice.getUser(false).then(function (response) {
 				$scope.spinner--;
 				console.log(response);
 				$rootScope.$broadcast(config.events.USER_REFRESHED, response.data);
@@ -21,14 +21,14 @@
 			}, function (err) {
 				$scope.spinner--;
 				console.log("Error:", err);
-				slacktip.alert(err.message || err.statusText);
+				dice.alert(err.message || err.statusText);
 			});
 		};
 
 		$scope.updateNextRefresh = function () {
 			$timeout.cancel($scope.nextRefresh);
 			$scope.nextRefresh = $timeout($scope.refresh,
-				slacktip.getConfigValue(config.keys.AUTO_REFRESH, config.defaults.AUTO_REFRESH));
+				dice.getConfigValue(config.keys.AUTO_REFRESH, config.defaults.AUTO_REFRESH));
 		};
 
 		$scope.generateInvoice = function () {
@@ -37,7 +37,7 @@
 				animation: true,
 				ariaLabelledBy: "addinvoice-modal-title",
 				ariaDescribedBy: "addinvoice-modal-body",
-				templateUrl: "templates/partials/slacktip/addinvoice.html",
+				templateUrl: "templates/partials/dice/addinvoice.html",
 				controller: "ModalAddInvoiceCtrl",
 				controllerAs: "$ctrl",
 				size: "lg",
@@ -69,7 +69,7 @@
 				animation: true,
 				ariaLabelledBy: "withdrawfunds-modal-title",
 				ariaDescribedBy: "withdrawfunds-modal-body",
-				templateUrl: "templates/partials/slacktip/withdrawfunds.html",
+				templateUrl: "templates/partials/dice/withdrawfunds.html",
 				controller: "ModalWithdrawFundsCtrl",
 				controllerAs: "$ctrl",
 				size: "lg",

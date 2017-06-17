@@ -40,8 +40,7 @@ jspm_packages
 /*.pem
 /lncliweb-win32-x64
 /dist
-/config/grant-config.js
-/config/slack-config.js
+/config/dice-config.js
 /data/*
 /config/config.js
 /config/defaults.js

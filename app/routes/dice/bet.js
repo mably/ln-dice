@@ -1,12 +1,12 @@
-// app/routes/slacktip/tip.js
+// app/routes/dice/tip.js
 
-const debug = require("debug")("lncliweb:routes:slacktip");
+const debug = require("debug")("lncliweb:routes:dice");
 
-module.exports = function (slacktip) {
+module.exports = function (dice) {
 	return function (req, res) {
 		debug(req.body);
 		if (req.session.user) {
-			slacktip.sendTip(req.session.user, req.body.userid, req.body.teamid, req.body.amount).then(function (response) {
+			dice.sendTip(req.session.user, req.body.userid, req.body.teamid, req.body.amount).then(function (response) {
 				res.json(response);
 			}, function (err) {
 				debug("sendtip error", err);

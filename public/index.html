@@ -7,52 +7,40 @@
 
 	<title>Dice service using Lightning Network for payments</title>
 
-	<link rel="stylesheet" href="./components/bootstrap/dist/css/bootstrap.min.css"><!-- load bootstrap -->
-	<link rel="stylesheet" href="./components/components-font-awesome/css/font-awesome.min.css"><!-- load font-awesome -->
-	<link rel="stylesheet" href="./components/ngToast/dist/ngToast.min.css"><!-- load ngToast -->
-	<style>
-		html { overflow-y: scroll; }
-		body { padding-top: 50px; }
-		div.page-header {
-			position: relative;
-		}
-		div.page-header > a[name] {
-			position: absolute;
-			top: -70px;
-		}
-		@media screen and (max-width: 767px) {
-			td.pubkey, td.payreq {
-				max-width: 15em;
-			}
-		}
-	</style>
+	<!--<link rel="stylesheet" href="./components/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="./components/components-font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="./components/ngToast/dist/ngToast.min.css">
 
-	<script src="./components/jquery/dist/jquery.min.js"></script><!-- load jquery -->
-	<script src="./components/angular/angular.min.js"></script><!-- load angular -->
-	<script src="./components/angular-animate/angular-animate.min.js"></script><!-- load angular-animate -->
-	<script src="./components/angular-sanitize/angular-sanitize.min.js"></script><!-- load angular-sanitize -->
-	<script src="./components/angular-local-storage/dist/angular-local-storage.min.js"></script><!-- load angular-local-storage -->
-	<script src="./components/bootstrap/dist/js/bootstrap.min.js"></script><!-- load bootstrap -->
-	<script src="./components/angular-bootstrap/ui-bootstrap.min.js"></script><!-- load bootstrap for angular -->
-	<script src="./components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script><!-- load bootstrap tpls for angular -->
-	<script src="./components/bootbox.js/bootbox.js"></script><!-- load bootbox -->
-	<script src="./components/clipboard/dist/clipboard.min.js"></script><!-- load clipboard -->
-	<script src="./components/ngclipboard/dist/ngclipboard.min.js"></script><!-- load ngclipboard -->
-	<script src="./components/socket.io-client/dist/socket.io.min.js"></script><!-- load socket.io -->
-	<script src="./components/ngToast/dist/ngToast.min.js"></script><!-- load ngToast -->
-	<script src="./components/angular-uuids/angular-uuid.js"></script><!-- load angular-uuids -->
-	<script src="./components/simple-web-notification/web-notification.js"></script><!-- load simple-web-notification -->
-	<script src="./components/angular-web-notification/angular-web-notification.js"></script><!-- angular-web-notification -->
-	<script src="./components/angular-base64/angular-base64.js"></script><!-- angular-base64 -->
+	<script src="./components/jquery/dist/jquery.min.js"></script>
+	<script src="./components/angular/angular.min.js"></script>
+	<script src="./components/angular-animate/angular-animate.min.js"></script>
+	<script src="./components/angular-sanitize/angular-sanitize.min.js"></script>
+	<script src="./components/angular-local-storage/dist/angular-local-storage.min.js"></script>
+	<script src="./components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="./components/angular-bootstrap/ui-bootstrap.min.js"></script>
+	<script src="./components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	<script src="./components/bootbox.js/bootbox.js"></script>
+	<script src="./components/clipboard/dist/clipboard.min.js"></script>
+	<script src="./components/ngclipboard/dist/ngclipboard.min.js"></script>
+	<script src="./components/socket.io-client/dist/socket.io.min.js"></script>
+	<script src="./components/ngToast/dist/ngToast.min.js"></script>
+	<script src="./components/angular-uuids/angular-uuid.js"></script>
+	<script src="./components/simple-web-notification/web-notification.js"></script>
+	<script src="./components/angular-web-notification/angular-web-notification.js"></script>
+	<script src="./components/angular-base64/angular-base64.js"></script>
 
 	<script src="./js/diceapp.js"></script>
 	<script src="./js/controllers/dice/navbar.js"></script>
 	<script src="./js/controllers/dice/user.js"></script>
 	<script src="./js/controllers/dice/addinvoice.js"></script>
 	<script src="./js/controllers/dice/withdrawfunds.js"></script>
-	<script src="./js/controllers/dice/sendtip.js"></script>
-	<script src="./js/directives/dice/getuser.js"></script>
-	<script src="./js/services/dice/dice.js"></script>
+	<script src="./js/controllers/dice/bet.js"></script>
+	<script src="./js/controllers/dice/login.js"></script>
+	<script src="./js/controllers/dice/signup.js"></script>
+	<script src="./js/directives/dice/getaccount.js"></script>
+	<script src="./js/services/dice/dice.js"></script>-->
+
+	<script src="./dist/diceapp-bundle.js"></script>
 
 </head>
 
@@ -73,8 +61,9 @@
 		<div id="navbar" class="navbar-collapse collapse" data-toggle="collapse" data-target=".navbar-collapse.in">
 		  <ul class="nav navbar-nav">
 			  <li><a href="#infos">Informations</a></li>
-			  <li ng-hide="user.diceid"><a href="#" ng-click="login()">Login</a></li>
-			  <li ng-show="user.diceid" ng-cloak><a href="#" ng-click="logout()">Logout</a></li>
+			  <li ng-hide="user.identity"><a href="#" ng-click="login()">Login</a></li>
+			  <li ng-hide="user.identity"><a href="#" ng-click="signup()">Sign up</a></li>
+			  <li ng-show="user.identity" ng-cloak><a href="#" ng-click="logout()">Logout</a></li>
 			  <li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools <span class="caret"></span></a>
 				<ul class="dropdown-menu">
@@ -115,8 +104,8 @@
 				</div>
 			</div>
 			<div class="panel-body">
-				<p ng-hide="info.diceid"><a href="#" ng-click="login()">Click here to access your account information</a></p>
-				<p ng-show="info.diceid" ng-cloak><get-user info="info" /></p>
+				<p ng-hide="info.identity">Use the navigation menu to login or sign up.</p>
+				<p ng-show="info.identity" ng-cloak><get-account info="info" /></p>
 				<button class="btn btn-default" type="button" ng-click="generateInvoice()" ng-show="info.diceid" ng-cloak>Deposit funds</button>
 				<button class="btn btn-default" type="button" ng-click="withdrawFunds()" ng-show="info.diceid" ng-cloak>Withdraw funds</button>
 			</div>

@@ -375,8 +375,8 @@ module.exports = function (app, lightning, dice, db) {
 		});
 	});
 
-	// get dice user info
-	app.get("/api/dice/getuser", require("./routes/dice/getuser.js")(dice));
+	// get dice account info
+	app.get("/api/dice/getaccount", require("./routes/dice/getaccount.js")(dice));
 
 	// addinvoice
 	app.post("/api/dice/addinvoice", require("./routes/dice/addinvoice.js")(dice));
@@ -386,6 +386,12 @@ module.exports = function (app, lightning, dice, db) {
 
 	// web app dice bet
 	app.post("/api/dice/bet", require("./routes/dice/bet.js")(dice));
+
+	// web app user signup
+	app.post("/api/dice/signup", require("./routes/dice/signup.js")(dice));
+
+	// web app user login
+	app.post("/api/dice/login", require("./routes/dice/login.js")(dice));
 
 	// session logout ----------------------------------------------------------
 	app.get("/api/logout", function (req, res) {

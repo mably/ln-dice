@@ -45,3 +45,5 @@ jspm_packages
 /config/config.js
 /config/defaults.js
 /public/files/*
+/public/dist
+/public/vendor

@@ -1,18 +1,18 @@
 (function () {
 	"use strict";
 
-	diceapp.service("dice", ["$rootScope", "$filter", "$http", "$timeout", "$interval", "$q", "ngToast", "localStorageService", "config", "uuid", "webNotification", Service]);
-
-	function Service($rootScope, $filter, $http, $timeout, $interval, $q, ngToast, localStorageService, config, uuid, webNotification) {
+	module.exports = function ($rootScope, $filter, $http, $timeout, $interval, $q, ngToast, localStorageService, $, config, uuid, webNotification, iosocket) {
 
 		var _this = this;
 
 		var API = {
+			SIGNUP: "/api/dice/signup",
+			LOGIN: "/api/dice/login",
 			LOGOUT: "/api/logout",
-			GETUSER: "/api/dice/getuser",
+			GETACCOUNT: "/api/dice/getaccount",
 			ADDINVOICE: "/api/dice/addinvoice",
 			WITHDRAWFUNDS: "/api/dice/withdrawfunds",
-			SENDTIP: "/api/dice/sendtip"
+			BET: "/api/dice/bet"
 		};
 
 		var configCache = null;
@@ -24,7 +24,7 @@
 			return window.serverRootPath ? window.serverRootPath + path : path;
 		};
 
-		var socket = io.connect(serverUrl("/"), { secure: location.protocol === "https" });
+		var socket = iosocket.connect(serverUrl("/"), { secure: location.protocol === "https" });
 
 		socket.on(config.events.HELLO_WS, function (data) {
 			console.log("Hello event received:", data);
@@ -192,12 +192,12 @@
 			return deferred.promise;
 		};
 
-		this.getUser = function (useCache) {
+		this.getAccount = function (useCache) {
 			var deferred = $q.defer();
 			if (useCache && userCache) {
 				deferred.resolve(userCache);
 			} else {
-				$http.get(serverUrl(API.GETUSER)).then(function (response) {
+				$http.get(serverUrl(API.GETACCOUNT)).then(function (response) {
 					userCache = response;
 					deferred.resolve(response);
 				}, function (err) {
@@ -217,9 +217,19 @@
 			return $http.post(serverUrl(API.WITHDRAWFUNDS), data);
 		};
 
-		this.sendTip = function (userid, teamid, amount) {
+		this.bet = function (userid, teamid, amount) {
 			var data = { userid: userid, teamid: teamid, amount: amount };
-			return $http.post(serverUrl(API.SENDTIP), data);
+			return $http.post(serverUrl(API.BET), data);
+		};
+
+		this.signup = function (username, password) {
+			var data = { username: username, password: password };
+			return $http.post(serverUrl(API.SIGNUP), data);
+		};
+
+		this.login = function (username, password) {
+			var data = { username: username, password: password };
+			return $http.post(serverUrl(API.LOGIN), data);
 		};
 
 		this.logout = function () {
@@ -227,6 +237,6 @@
 		};
 
 		Object.seal(this);
-	}
+	};
 
 })();

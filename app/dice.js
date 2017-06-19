@@ -4,6 +4,8 @@ const debug = require("debug")("lncliweb:dice");
 const logger = require("winston");
 const Promise = require("promise");
 const request = require("request");
+const crypto = require("crypto");
+const bCrypt = require("bcrypt-nodejs");
 
 // TODO
 module.exports = function (lightning, lnd, db, server, diceConfig) {
@@ -14,8 +16,10 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 	debug("dice server url", diceServerUrl);
 
 	var accountsCol = db.collection("dice-accounts");
-	accountsCol.createIndex({ diceid: 1 }, { unique: true });
+	accountsCol.createIndex({ accountid: 1 }, { unique: true });
 	var invoicesCol = db.collection("dice-invoices");
+	invoicesCol.createIndex({ hash: 1 });
+	invoicesCol.createIndex({ accountid: 1 });
 	var paymentsCol = db.collection("dice-payments");
 	var transactionsCol = db.collection("dice-transactions");
 
@@ -35,30 +39,21 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 						paymentsCol.insert([{ data: data }], { w: 1 }, function (err, result) {
 							logger.debug("Invoice data received DB insert:", result);
 						});
-						var diceId = buildDiceId(memo.identity);
-						module.dbGetUser(diceId).then(function (user) {
-							debug("dbGetUser", user);
+						module.dbGetInvoice(memo.hash).then(function (invoice) {
+							debug("dbGetInvoice", invoice);
 							var value = parseInt(data.value);
-							if (user) {
+							if (invoice) {
 								var update = { $inc: { balance:  value } };
-								module.dbUpdateUser(diceId, update).then(function (response) {
-									debug("dbUpdateUser", response);
+								module.dbUpdateAccount(invoice.accountid, update).then(function (response) {
+									debug("dbUpdateAccount", response);
 								}, function (err) {
-									debug("dbUpdateUser error", err);
+									debug("dbUpdateAccount error", err);
 								});
 							} else {
-								module.dbCreateUser(diceId, memo.identity, value).then(function (createdUsers) {
-									if (createdUsers.length >= 1) {
-										debug(createdUsers[0]);
-									} else {
-										debug("Something went wrong");
-									}
-								}, function (err) {
-									debug("dbCreateUser error", err);
-								});
+								debug("Invoice [" + memo.hash + "] not found");
 							}
 						}, function (err) {
-							debug("dbGetUser error", err);
+							debug("dbGetInvoice error", err);
 						});
 					}
 				} catch (err) {
@@ -71,16 +66,16 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 
 	registerLndInvoiceListener();
 
-	module.getUser = function (identity) {
+	module.signup = function (username, password) {
 		var promise = new Promise(function (resolve, reject) {
-			var diceId = buildDiceId(identity);
-			module.dbGetUser(diceId).then(function (user) {
-				debug("dbGetUser", user);
-				if (user) {
-					resolve(user);
+			var accountId = buildAccountId({ username: username });
+			module.dbGetAccount(accountId).then(function (account) {
+				debug("signup", account);
+				if (account) {
+					reject({ message: "Username not available." });
 				} else {
-					delete identity.ok;
-					module.dbCreateUser(diceId, identity, 0).then(function (createdUsers) {
+					var identity = { username: username, password: createPasswordHash(password) };
+					module.dbCreateAccount(accountId, identity, 0).then(function (createdUsers) {
 						if (createdUsers.length >= 1) {
 							resolve(createdUsers[0]);
 						} else {
@@ -91,14 +86,54 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 					});
 				}
 			}, function (err) {
-				debug("dbGetUser error", err);
+				debug("signup error", err);
 				reject(err);
 			});
 		});
 		return promise;
 	};
 
-	module.bet = function (user, amount, bet) {
+	module.login = function (username, password) {
+		var promise = new Promise(function (resolve, reject) {
+			var accountId = buildAccountId({ username: username });
+			module.dbGetAccount(accountId).then(function (account) {
+				debug("dbGetAccount", account);
+				if (account) {
+					if (bCrypt.compareSync(password, account.identity.password)) {
+						resolve(account);
+					} else {
+						reject({ message: "User unknown or invalid password." });
+					}
+				} else {
+					reject({ message: "User unknown or invalid password." });
+				}
+			}, function (err) {
+				debug("login error", err);
+				reject(err);
+			});
+		});
+		return promise;
+	};
+
+	module.getAccount = function (identity) {
+		var promise = new Promise(function (resolve, reject) {
+			var accountId = buildAccountId(identity);
+			module.dbGetAccount(accountId).then(function (account) {
+				debug("dbGetAccount", account);
+				if (account) {
+					resolve(account);
+				} else {
+					reject({ message: "Invalid account." });
+				}
+			}, function (err) {
+				debug("dbGetAccount error", err);
+				reject(err);
+			});
+		});
+		return promise;
+	};
+
+	module.bet = function (account, amount, bet) {
 		var promise = new Promise(function (resolve, reject) {
 			err.error = "Not implemented";
 			reject(err);
@@ -106,12 +141,21 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	var buildDiceId = function (identity) {
-		return identity;
+	var isValidAccountPassword = function (account, password) {
+		return bCrypt.compareSync(password, account.identity.password);
 	};
 
-	var buildInvoiceMemo = function (user) {
-		return "#dice#" + user.identity + "#";
+	// Generates hash using bCrypt
+	var createPasswordHash = function (password) {
+		return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+	};
+
+	var buildAccountId = function (identity) {
+		return identity.username;
+	};
+
+	var buildInvoiceMemo = function (invoiceHash) {
+		return "#dice#" + invoiceHash + "#";
 	};
 
 	var parseInvoiceMemo = function (memoStr) {
@@ -119,16 +163,19 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		var array = memoStr.match(re);
 		var memo;
 		if (array && array.length === 2) {
-			memo = { identity: array[1] };
+			memo = { hash: array[1] };
 		} else {
 			memo = null;
 		}
 		return memo;
 	};
 
-	module.addInvoice = function (user, amount) {
+	module.addInvoice = function (account, amount) {
 		var promise = new Promise(function (resolve, reject) {
-			var memo = buildInvoiceMemo(user);
+			var accountId = buildAccountId(account.identity);
+			var invoiceId = crypto.randomBytes(32).toString("base64");
+			var hash = crypto.createHash("sha256").update(invoiceId + accountId, "utf8").digest("base64");
+			var memo = buildInvoiceMemo(hash);
 			var params = { memo: memo, value: amount };
 			lightning.addInvoice(params, function (err, response) {
 				if (err) {
@@ -137,7 +184,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 					reject(err);
 				} else {
 					logger.debug("AddInvoice:", response);
-					module.dbAddInvoice({ params: params, response: response });
+					module.dbAddInvoice({ hash: hash, invoiceid: invoiceId, accountid: accountId, params: params, response: response });
 					resolve(response);
 				}
 			});
@@ -145,7 +192,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	module.withdrawFunds = function (user, payreq) {
+	module.withdrawFunds = function (account, payreq) {
 		var promise = new Promise(function (resolve, reject) {
 			lightning.decodePayReq({ pay_req: payreq }, function (err, response) {
 				if (err) {
@@ -154,14 +201,14 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 					reject(err);
 				} else {
 					logger.debug("DecodePayReq:", response);
-					var sourceDiceId = buildDiceId(user.identity);
-					module.dbGetUser(sourceDiceId).then(function (sourceUser) {
-						debug("dbGetUser", sourceUser);
+					var sourceAccountId = buildAccountId(account.identity);
+					module.dbGetAccount(sourceAccountId).then(function (sourceUser) {
+						debug("dbGetAccount", sourceUser);
 						var amount = parseInt(response.num_satoshis);
 						if (amount > sourceUser.balance) {
 							reject("Withdrawal rejected, not enough funds in your account.");
 						} else {
-							module.dbWithdrawFunds(sourceDiceId, amount).then(function (result) {
+							module.dbWithdrawFunds(sourceAccountId, amount).then(function (result) {
 								var paymentRequest = { payment_request: payreq };
 								logger.debug("Sending payment", paymentRequest);
 								lightning.sendPaymentSync(paymentRequest, function (err, response) {
@@ -187,6 +234,23 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
+	module.dbGetInvoice = function (invoiceHash) {
+		var promise = new Promise(function (resolve, reject) {
+			invoicesCol.find({ hash: invoiceHash }).toArray(function (err, invoices) {
+				if (err) {
+					reject(err);
+				} else {
+					if (invoices.length >= 1) {
+						resolve(invoices[0]);
+					} else {
+						resolve(null);
+					}
+				}
+			});
+		});
+		return promise;
+	};
+
 	module.dbAddInvoice = function (invoice) {
 		var promise = new Promise(function (resolve, reject) {
 			invoicesCol.insert([invoice], { w: 1 }, function (err, result) {
@@ -201,9 +265,9 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	module.dbGetUser = function (diceId) {
+	module.dbGetAccount = function (accountId) {
 		var promise = new Promise(function (resolve, reject) {
-			accountsCol.find({ diceid: diceId }).toArray(function (err, accounts) {
+			accountsCol.find({ accountid: accountId }).toArray(function (err, accounts) {
 				if (err) {
 					reject(err);
 				} else {
@@ -218,10 +282,10 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	module.dbCreateUser = function (diceId, identity, balance) {
+	module.dbCreateAccount = function (accountId, identity, balance) {
 		var promise = new Promise(function (resolve, reject) {
-			var user = { diceid: diceId, identity: identity, balance: balance, pendingTransactions: [] };
-			accountsCol.insert(user, { w: 1 }, function (err, result) {
+			var account = { accountid: accountId, identity: identity, balance: balance, pendingTransactions: [] };
+			accountsCol.insert(account, { w: 1 }, function (err, result) {
 				if (err) {
 					reject(err);
 				} else {
@@ -233,13 +297,13 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	module.dbUpdateUser = function (diceId, update) {
+	module.dbUpdateAccount = function (accountId, update) {
 		var promise = new Promise(function (resolve, reject) {
-			accountsCol.update({ diceid: diceId }, update, { w: 1 }, function (err, result) {
+			accountsCol.update({ accountid: accountId }, update, { w: 1 }, function (err, result) {
 				if (err) {
 					reject(err);
 				} else {
-					logger.debug("dbUpdateUser DB update", result);
+					logger.debug("dbUpdateAccount DB update", result);
 					resolve(result);
 				}
 			});
@@ -247,9 +311,9 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return promise;
 	};
 
-	module.dbWithdrawFunds = function (diceId, amount) {
+	module.dbWithdrawFunds = function (accountId, amount) {
 		var promise = new Promise(function (resolve, reject) {
-			accountsCol.update({ diceid: diceId, balance: { $gte: amount } }, { $inc: { balance: -1 * amount } }, { w: 1 }, function (err, result) {
+			accountsCol.update({ accountid: accountId, balance: { $gte: amount } }, { $inc: { balance: -1 * amount } }, { w: 1 }, function (err, result) {
 				if (err) {
 					reject(err);
 				} else {

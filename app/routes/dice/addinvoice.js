@@ -5,8 +5,8 @@ const logger = require("winston");
 
 module.exports = function (dice) {
 	return function (req, res) {
-		if (req.session.user) {
-			dice.addInvoice(req.session.user, req.body.value).then(function (response) {
+		if (req.session.account) {
+			dice.addInvoice(req.session.account, req.body.value).then(function (response) {
 				res.json(response);
 			}, function (err) {
 				res.send(err);

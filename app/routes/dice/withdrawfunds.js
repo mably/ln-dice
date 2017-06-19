@@ -5,8 +5,8 @@ const logger = require("winston");
 
 module.exports = function (dice) {
 	return function (req, res) {
-		if (req.session.user) {
-			dice.withdrawFunds(req.session.user, req.body.payreq).then(function (response) {
+		if (req.session.account) {
+			dice.withdrawFunds(req.session.account, req.body.payreq).then(function (response) {
 				res.json(response);
 			}, function (err) {
 				res.status(400).send({ error: err });

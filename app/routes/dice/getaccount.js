@@ -1,13 +1,13 @@
-// app/routes/dice/getuser.js
+// app/routes/dice/getaccount.js
 
 const debug = require("debug")("lncliweb:routes:dice");
 
 module.exports = function (dice) {
 	return function (req, res) {
-		if (req.session.user) {
-			debug(req.session.user);
-			dice.getUser(req.session.user.identity).then(function (user) {
-				res.json(user);
+		if (req.session.account) {
+			debug(req.session.account);
+			dice.getAccount(req.session.account.identity).then(function (account) {
+				res.json(account);
 			}, function (err) {
 				res.json({ message: err.message });
 			});

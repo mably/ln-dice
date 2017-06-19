@@ -1,4 +1,2 @@
 module.exports = {
-	verificationToken: "[VERIFICATION TOKEN]",
-	accessToken: "[ACCESS TOKEN]"
 };

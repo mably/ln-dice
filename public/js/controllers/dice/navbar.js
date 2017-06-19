@@ -1,73 +1,84 @@
-(function () {
+module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, config) {
 
-	diceapp.controller("NavBarCtrl", ["$rootScope", "$scope", "$timeout", "$uibModal", "dice", "config", controller]);
+	var $ctrl = this;
 
-	function controller($rootScope, $scope, $timeout, $uibModal, dice, config) {
+	$scope.user = null;
 
-		var $ctrl = this;
+	$scope.refresh = function () {
+	};
 
-		$scope.user = null;
+	$scope.signup = function () {
 
-		$scope.refresh = function () {
-		};
+		var modalInstance = $uibModal.open(config.modals.SIGNUP);
 
-		$scope.logout = function () {
-			dice.logout().then(function (response) {
-				$rootScope.$broadcast(config.events.USER_REFRESH, response);
-			}, function (err) {
-				console.log(err);
-				dice.alert(err);
-			});
-		};
-
-		$scope.sendTip = function () {
-
-			if ($scope.user.identity) {
-
-				var modalInstance = $uibModal.open({
-					animation: true,
-					ariaLabelledBy: "sendtip-modal-title",
-					ariaDescribedBy: "sendtip-modal-body",
-					templateUrl: "templates/partials/dice/sendtip.html",
-					controller: "ModalSendTipCtrl",
-					controllerAs: "$ctrl",
-					size: "lg",
-					resolve: {
-						defaults: function () {
-							return {
-								userid: $scope.user.identity.user.id,
-								teamid: $scope.user.identity.team.id,
-								amount: 10
-							};
-						}
-					}
-				});
-
-				modalInstance.rendered.then(function () {
-					$("#sendtip-userid").focus();
-				});
-
-				modalInstance.result.then(function (values) {
-					console.log("values", values);
-				}, function () {
-					console.log("Modal dismissed at: " + new Date());
-				});
-
-			} else {
-
-				var message = "You need to be authentified to use this service.";
-				dice.alert(message);
-
-			}
-
-		};
-
-		$scope.$on(config.events.USER_REFRESHED, function (event, args) {
-			console.log("Received event USER_REFRESHED", event, args);
-			$scope.user = args;
-			$scope.refresh();
+		modalInstance.rendered.then(function () {
+			$("#signup-username").focus();
 		});
 
-	}
+		modalInstance.result.then(function (values) {
+			console.log("values", values);
+			$scope.user = values;
+		}, function () {
+			console.log("Modal dismissed at: " + new Date());
+		});
 
-})();
+	};
+
+	$scope.login = function () {
+
+		var modalInstance = $uibModal.open(config.modals.LOGIN);
+
+		modalInstance.rendered.then(function () {
+			$("#login-username").focus();
+		});
+
+		modalInstance.result.then(function (values) {
+			console.log("values", values);
+			$scope.user = values;
+		}, function () {
+			console.log("Modal dismissed at: " + new Date());
+		});
+
+	};
+
+	$scope.logout = function () {
+		dice.logout().then(function (response) {
+			$rootScope.$broadcast(config.events.USER_REFRESH, response);
+		}, function (err) {
+			console.log(err);
+			dice.alert(err);
+		});
+	};
+
+	$scope.bet = function () {
+
+		if ($scope.user.identity) {
+
+			var modalInstance = $uibModal.open(config.modals.BET);
+
+			modalInstance.rendered.then(function () {
+				$("#bet-userid").focus();
+			});
+
+			modalInstance.result.then(function (values) {
+				console.log("values", values);
+			}, function () {
+				console.log("Modal dismissed at: " + new Date());
+			});
+
+		} else {
+
+			var message = "You need to be authentified to use this service.";
+			dice.alert(message);
+
+		}
+
+	};
+
+	$scope.$on(config.events.USER_REFRESHED, function (event, args) {
+		console.log("Received event USER_REFRESHED", event, args);
+		$scope.user = args;
+		$scope.refresh();
+	});
+
+};

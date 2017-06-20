@@ -1,5 +1,24 @@
-// public/core.js
-var lnwebcli = angular.module("lnwebcli", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
+// public/js/lnd.js
+var css = require("../css/lnd.css");
+
+window.jQuery = require("jQuery");
+require("bootstrap");
+
+const angular = require("angular");
+require("angular-ui-bootstrap");
+require("angular-local-storage");
+require("ngclipboard");
+require("angular-sanitize");
+require("bootbox");
+require("ng-toast");
+require("angular-uuid");
+window.webNotification = require("simple-web-notification"); // required by angular-web-notification
+require("angular-web-notification");
+require("angular-base64");
+
+const lnwebcli = angular.module("lnwebcli", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
+
+lnwebcli.value("jQuery", window.jQuery);
 
 lnwebcli.config(["localStorageServiceProvider", function (localStorageServiceProvider) {
 	localStorageServiceProvider
@@ -88,3 +107,9 @@ lnwebcli.constant("config", {
 		}
 	}
 });
+
+require("./filters")(lnwebcli);
+require("./factories")(lnwebcli);
+require("./controllers/lnd")(lnwebcli);
+require("./directives/lnd")(lnwebcli);
+require("./services/lnd")(lnwebcli);

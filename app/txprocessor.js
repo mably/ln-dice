@@ -1,6 +1,6 @@
 // app/txprocessor.js
 
-const debug = require("debug")("lncliweb:slacktip");
+const debug = require("debug")("lncliweb:dice");
 const logger = require("winston");
 const Promise = require("promise");
 
@@ -9,10 +9,10 @@ module.exports = function (db, accountsCol, transactionsCol) {
 
 	var module = {};
 
-	module.dbExecuteTransaction = function (sourceSlackId, targetSlackId, tipAmount) {
+	module.dbExecuteTransaction = function (sourceAccountId, targetAccountId, tipAmount) {
 		var promise = new Promise(function (resolve, reject) {
 			if (Number.isInteger(tipAmount)) {
-				var transaction = { source: sourceSlackId, destination: targetSlackId, value: tipAmount, state: "initial", lastModified: new Date() };
+				var transaction = { source: sourceAccountId, destination: targetAccountId, value: tipAmount, state: "initial", lastModified: new Date() };
 				transactionsCol.insert(transaction, { w: 1 }, function (err, result) {
 					if (err) {
 						reject(err);
@@ -144,10 +144,10 @@ module.exports = function (db, accountsCol, transactionsCol) {
 		return promise;
 	};
 
-	module.dbUpdateAccountBalance = function (slackid, txid, value) {
+	module.dbUpdateAccountBalance = function (accountid, txid, value) {
 		var promise = new Promise(function (resolve, reject) {
 			accountsCol.update(
-				{ slackid: slackid, pendingTransactions: { $ne: (txid + "") } },
+				{ accountid: accountid, pendingTransactions: { $ne: (txid + "") } },
 				{ $inc: { balance: value }, $push: { pendingTransactions: (txid + "") } },
 				{ w: 1 }, function (err, result) {
 					if (err) {
@@ -190,10 +190,10 @@ module.exports = function (db, accountsCol, transactionsCol) {
 		return promise;
 	};
 
-	module.dbRemovePendingTransaction = function (slackid, txid) {
+	module.dbRemovePendingTransaction = function (accountid, txid) {
 		var promise = new Promise(function (resolve, reject) {
 			accountsCol.update(
-				{ slackid: slackid, pendingTransactions: { $eq: (txid + "") } },
+				{ accountid: accountid, pendingTransactions: { $eq: (txid + "") } },
 				{ $pull: { pendingTransactions: (txid + "") } },
 				{ w: 1 }, function (err, result) {
 					if (err) {
@@ -249,10 +249,10 @@ module.exports = function (db, accountsCol, transactionsCol) {
 		return promise;
 	};
 
-	module.dbRollbackAccountBalance = function (slackid, txid, value) {
+	module.dbRollbackAccountBalance = function (accountid, txid, value) {
 		var promise = new Promise(function (resolve, reject) {
 			accountsCol.update(
-				{ slackid: slackid, pendingTransactions: (txid + "") },
+				{ accountid: accountid, pendingTransactions: (txid + "") },
 				{ $inc: { balance: value }, $pull: { pendingTransactions: (txid + "") } },
 				{ w: 1 }, function (err, result) {
 					if (err) {

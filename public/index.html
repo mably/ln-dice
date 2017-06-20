@@ -60,15 +60,17 @@
 		</div>
 		<div id="navbar" class="navbar-collapse collapse" data-toggle="collapse" data-target=".navbar-collapse.in">
 		  <ul class="nav navbar-nav">
-			  <li><a href="#infos">Informations</a></li>
+			  <!--<li><a href="#infos">Informations</a></li>
 			  <li ng-hide="user.identity"><a href="#" ng-click="login()">Login</a></li>
 			  <li ng-hide="user.identity"><a href="#" ng-click="signup()">Sign up</a></li>
-			  <li ng-show="user.identity" ng-cloak><a href="#" ng-click="logout()">Logout</a></li>
+			  <li ng-show="user.identity" ng-cloak><a href="#" ng-click="logout()">Logout</a></li>-->
 			  <li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools <span class="caret"></span></a>
 				<ul class="dropdown-menu">
-				  <li><a ng-click="bet()">Bet</a></li>
-				  <li><a href="/lnd.html">lnd dashboard</a></li>
+					<!--<li><a ng-click="bet()">Bet</a></li>-->
+					<li><a ng-click="lnbet()">LN Bet</a></li>
+					<li role="separator" class="divider"></li>
+					<li><a href="/lnd.html">lnd dashboard</a></li>
 				</ul>
 			  </li> 
 		  </ul>
@@ -94,7 +96,7 @@
 		</div><!-- /.col-sm-12 -->
 	</div>
 
-	<div class="row">
+	<div class="row" style="display:none">
 		<div class="col-sm-12">
 		  <div class="panel panel-default" ng-controller="UserCtrl">
 			<div class="panel-heading clearfix">
@@ -120,7 +122,7 @@
 				<span class="panel-title">How to use</span>
 			</div>
 			<div class="panel-body">
-				TODO
+				Click on the "LN bet" link in the "Tools" menu above.
 			</div>
 		  </div>
 		</div><!-- /.col-sm-12 -->

@@ -1,7 +1,7 @@
 // public/diceapp.js
 var css = require("../css/diceapp.css");
 
-window.jQuery = require("jQuery");
+window.jQuery = require("jquery");
 require("bootstrap");
 
 const angular = require("angular");
@@ -9,7 +9,7 @@ require("angular-ui-bootstrap");
 require("angular-local-storage");
 require("ngclipboard");
 require("angular-sanitize");
-require("bootbox");
+const bootbox = require("bootbox");
 require("ng-toast");
 require("angular-uuid");
 window.webNotification = require("simple-web-notification"); // required by angular-web-notification
@@ -19,6 +19,7 @@ require("angular-base64");
 const diceapp = angular.module("diceapp", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
 
 diceapp.value("jQuery", window.jQuery);
+diceapp.value("bootbox", bootbox);
 
 diceapp.config(["localStorageServiceProvider", function (localStorageServiceProvider) {
 	localStorageServiceProvider
@@ -48,9 +49,11 @@ diceapp.constant("config", {
 		WARNING: "WARNING"
 	},
 	events: {
+		HELLO_WS: "hello",
 		INVOICE_WS: "invoice",
+		BETRESULT_WS: "betresult",
 		USER_REFRESH: "user.refresh",
-		USER_REFRESHED: "user.refreshed"
+		USER_REFRESHED: "user.refreshed",
 	},
 	modals: {
 		SIGNUP: {
@@ -96,7 +99,25 @@ diceapp.constant("config", {
 			resolve: {
 				defaults: function () {
 					return {
-						// Nothing
+						amount: 100,
+						factor: 2.0
+					};
+				}
+			}
+		},
+		LNBET: {
+			animation: true,
+			ariaLabelledBy: "bet-modal-title",
+			ariaDescribedBy: "bet-modal-body",
+			templateUrl: "templates/partials/dice/lnbet.html",
+			controller: "ModalBetCtrl",
+			controllerAs: "$ctrl",
+			size: "lg",
+			resolve: {
+				defaults: function () {
+					return {
+						amount: 100,
+						factor: 2.0
 					};
 				}
 			}

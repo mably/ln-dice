@@ -1,7 +1,7 @@
 // public/js/lnd.js
 var css = require("../css/lnd.css");
 
-window.jQuery = require("jQuery");
+window.jQuery = require("jquery");
 require("bootstrap");
 
 const angular = require("angular");
@@ -9,7 +9,7 @@ require("angular-ui-bootstrap");
 require("angular-local-storage");
 require("ngclipboard");
 require("angular-sanitize");
-require("bootbox");
+const bootbox = require("bootbox");
 require("ng-toast");
 require("angular-uuid");
 window.webNotification = require("simple-web-notification"); // required by angular-web-notification
@@ -19,6 +19,7 @@ require("angular-base64");
 const lnwebcli = angular.module("lnwebcli", ["ui.bootstrap", "LocalStorageModule", "ngclipboard", "ngSanitize", "ngToast", "angular-uuid", "angular-web-notification", "base64"]);
 
 lnwebcli.value("jQuery", window.jQuery);
+lnwebcli.value("bootbox", bootbox);
 
 lnwebcli.config(["localStorageServiceProvider", function (localStorageServiceProvider) {
 	localStorageServiceProvider

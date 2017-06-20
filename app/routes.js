@@ -384,6 +384,9 @@ module.exports = function (app, lightning, dice, db) {
 	// withdraw funds
 	app.post("/api/dice/withdrawfunds", require("./routes/dice/withdrawfunds.js")(dice));
 
+	// web app dice bet information
+	app.post("/api/dice/betinfo", require("./routes/dice/betinfo.js")(dice));
+
 	// web app dice bet
 	app.post("/api/dice/bet", require("./routes/dice/bet.js")(dice));
 

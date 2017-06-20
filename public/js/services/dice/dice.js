@@ -1,7 +1,7 @@
 (function () {
 	"use strict";
 
-	module.exports = function ($rootScope, $filter, $http, $timeout, $interval, $q, ngToast, localStorageService, $, config, uuid, webNotification, iosocket) {
+	module.exports = function ($rootScope, $filter, $http, $timeout, $interval, $q, ngToast, bootbox, localStorageService, $, config, uuid, webNotification, iosocket) {
 
 		var _this = this;
 
@@ -12,6 +12,7 @@
 			GETACCOUNT: "/api/dice/getaccount",
 			ADDINVOICE: "/api/dice/addinvoice",
 			WITHDRAWFUNDS: "/api/dice/withdrawfunds",
+			BETINFO: "/api/dice/betinfo",
 			BET: "/api/dice/bet"
 		};
 
@@ -27,13 +28,35 @@
 		var socket = iosocket.connect(serverUrl("/"), { secure: location.protocol === "https" });
 
 		socket.on(config.events.HELLO_WS, function (data) {
-			console.log("Hello event received:", data);
+			console.log("Hello event received for socket:", data);
 			var helloMsg = ((data && data.remoteAddress) ? data.remoteAddress + " s" : "S") + "ucessfully connected!";
 			_this.notify(config.notif.SUCCESS, helloMsg);
 		});
 
 		socket.on(config.events.INVOICE_WS, function (data) {
 			console.log("Invoice received:", data);
+		});
+
+		socket.on(config.events.BETRESULT_WS, function (response) {
+			console.log("Bet result received:", response);
+			$timeout(function () {
+				if (response.evt && response.rid) { // valid event
+					if (wsRequestListenersFilter(response)) {
+						if ((response.evt === "error") && response.data.error) {
+							var errMsg = response.data.error;
+							_this.notify(config.notif.WARNING, errMsg);
+						} else if ((response.evt === "data") && response.data.winamount) {
+							var dataMsg;
+							if (response.data.winamount > 0) {
+								dataMsg = "Successful bet! You won " + response.data.winamount + ".";
+							} else {
+								dataMsg = "You lost! Try again, you might be luckier next time.";
+							}
+							_this.notify(config.notif.INFO, dataMsg);
+						}
+					}
+				}
+			});
 		});
 
 		var wsRequestListenersFilter = function (response) {
@@ -118,18 +141,22 @@
 				}
 				var $notifObj = $("#notifications");
 				if ($notifObj) {
-					var notifHtml = $notifObj.html();
-					index = -1;
-					var maxLogBuffer = _this.getConfigValue(
-						config.keys.MAX_NOTIF_BUFFER, config.defaults.MAX_NOTIF_BUFFER);
-					while (notifLines > maxLogBuffer) {
-						index = notifHtml.indexOf("\n", index + 1);
-						notifLines--;
+					try {
+						var notifHtml = $notifObj.html();
+						index = -1;
+						var maxLogBuffer = _this.getConfigValue(
+							config.keys.MAX_NOTIF_BUFFER, config.defaults.MAX_NOTIF_BUFFER);
+						while (notifLines > maxLogBuffer) {
+							index = notifHtml.indexOf("\n", index + 1);
+							notifLines--;
+						}
+						notifHtml = notifHtml.substring(index + 1);
+						var now = $filter("date")(new Date(), "yyyy-MM-dd HH:mm:ss Z");
+						$notifObj.html(notifHtml + now + " - " + type + " - " + message + "\n");
+						$notifObj.scrollTop($notifObj[0].scrollHeight);
+					} catch (err) {
+						console.log(err);
 					}
-					notifHtml = notifHtml.substring(index + 1);
-					var now = $filter("date")(new Date(), "yyyy-MM-dd HH:mm:ss Z");
-					$notifObj.html(notifHtml + now + " - " + type + " - " + message + "\n");
-					$notifObj.scrollTop($notifObj[0].scrollHeight);
 				}
 			}
 		};
@@ -217,9 +244,14 @@
 			return $http.post(serverUrl(API.WITHDRAWFUNDS), data);
 		};
 
-		this.bet = function (userid, teamid, amount) {
-			var data = { userid: userid, teamid: teamid, amount: amount };
+		this.bet = function (amount, factor, choice, seed, winpayreq) {
+			var data = { sid: socket.id, rid: uuid.v4(), amount: amount, factor: factor, choice: choice, seed: seed, winpayreq: winpayreq };
 			return $http.post(serverUrl(API.BET), data);
+		};
+
+		this.betInfo = function (amount, factor, choice) {
+			var data = { amount: amount, factor: factor, choice: choice };
+			return $http.post(serverUrl(API.BETINFO), data);
 		};
 
 		this.signup = function (username, password) {

@@ -17,7 +17,7 @@ module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, con
 
 		modalInstance.result.then(function (values) {
 			console.log("values", values);
-			$scope.user = values;
+			$rootScope.$broadcast(config.events.USER_REFRESHED, values);
 		}, function () {
 			console.log("Modal dismissed at: " + new Date());
 		});
@@ -34,7 +34,7 @@ module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, con
 
 		modalInstance.result.then(function (values) {
 			console.log("values", values);
-			$scope.user = values;
+			$rootScope.$broadcast(config.events.USER_REFRESHED, values);
 		}, function () {
 			console.log("Modal dismissed at: " + new Date());
 		});
@@ -57,11 +57,12 @@ module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, con
 			var modalInstance = $uibModal.open(config.modals.BET);
 
 			modalInstance.rendered.then(function () {
-				$("#bet-userid").focus();
+				$("#bet-amount").focus();
 			});
 
-			modalInstance.result.then(function (values) {
-				console.log("values", values);
+			modalInstance.result.then(function (response) {
+				console.log("response", response);
+				$rootScope.$broadcast(config.events.USER_REFRESH, response);
 			}, function () {
 				console.log("Modal dismissed at: " + new Date());
 			});
@@ -72,6 +73,23 @@ module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, con
 			dice.alert(message);
 
 		}
+
+	};
+
+	$scope.lnbet = function () {
+
+		var modalInstance = $uibModal.open(config.modals.LNBET);
+
+		modalInstance.rendered.then(function () {
+			$("#bet-amount").focus();
+		});
+
+		modalInstance.result.then(function (response) {
+			console.log("response", response);
+			$rootScope.$broadcast(config.events.USER_REFRESH, response);
+		}, function () {
+			console.log("Modal dismissed at: " + new Date());
+		});
 
 	};
 

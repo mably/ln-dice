@@ -1,10 +1,14 @@
 <div>
 
 	<dl class="dl-horizontal" style="overflow-wrap: break-word;">
-	  <dt>Name</dt>
-	  <dd>{{ info.identity.username }}</dd>
-	  <dt>Balance</dt>
-	  <dd><ng-pluralize count="info.balance" when="{'0': '0 satoshi', 'one': '1 satoshi', 'other': '{} satoshis'}"></ng-pluralize></dd>
+		<dt>User name</dt>
+		<dd>{{ info.identity.username }}</dd>
+		<dt>Account balance</dt>
+		<dd><ng-pluralize count="info.balance" when="{'0': '0 satoshi', 'one': '1 satoshi', 'other': '{} satoshis'}"></ng-pluralize></dd>
+		<dt>Last server seed hash</dt>
+		<dd>{{ info.identity.lastSeedHash }}</dd>
+		<dt>Next server seed hash</dt>
+		<dd>{{ info.identity.nextSeedHash }}</dd>
 	</dl>
 
 	<div id="getinfo-data" class="collapse">

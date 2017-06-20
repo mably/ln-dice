@@ -75,8 +75,8 @@ var config = {
 // This method makes it easy to use common bundling options in different tasks
 var bundle = function (bundler, entryPointName) {
 
-	var sourcePath = config.js.srcDir + entryPointName + ".js";
-	var outputFilename = entryPointName + config.js.outputSuffix;
+    var sourcePath = config.js.srcDir + entryPointName + ".js";
+    var outputFilename = entryPointName + config.js.outputSuffix;
     // Add options to add to "base" bundler passed as parameter
     bundler
         .bundle()                                    // Start bundle
@@ -92,7 +92,7 @@ var bundle = function (bundler, entryPointName) {
 
 var bundleTask = function (entryPointName) {
 
-	var entryPointPath = config.js.srcDir + entryPointName + ".js";
+    var entryPointPath = config.js.srcDir + entryPointName + ".js";
     var bundler = browserify({ entries: entryPointPath, debug: true })  // Pass browserify the entry point
                                 .transform(babelify, { presets : [ 'es2015' ] })  // Then, babelify, with ES2015 preset
                                 .transform("browserify-css", {
@@ -127,11 +127,15 @@ var bundleTask = function (entryPointName) {
         }
     });
 
+    var updateBundle = function() {
+        gutil.log("Updating bundle...");
+        bundle(bundler, entryPointName)
+		gutil.log("Bundle updated...");
+    }
+
     if (global.isWatching) {
         bundler = watchify(bundler);
-        bundler.on("update", function () {
-            bundle(bundler, entryPointName)
-        });
+        bundler.on("update", updateBundle);
     }
 
     bundle(bundler, entryPointName);  // Chain other options -- sourcemaps, rename, etc.

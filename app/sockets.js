@@ -8,11 +8,11 @@ const bitcore = require("bitcore-lib");
 const BufferUtil = bitcore.util.buffer;
 
 // TODO
-module.exports = function (io, lightning, lnd, login, pass, limitlogin, limitpass, lndLogfile) {
+module.exports = function (io, lightning, lnd, dice, login, pass, limitlogin, limitpass, lndLogfile) {
 
 	var clients = [];
 
-	var authRequired = (login && pass) || (limitlogin && limitpass);
+	var authEnabled = (login && pass) || (limitlogin && limitpass);
 
 	var userToken = null;
 	var limitUserToken = null;
@@ -89,7 +89,7 @@ module.exports = function (io, lightning, lnd, login, pass, limitlogin, limitpas
 
 		debug("socket.handshake", socket.handshake);
 
-		if (authRequired) {
+		if (authEnabled) {
 			try {
 				var authorizationHeaderToken;
 				if (socket.handshake.query.auth) {
@@ -143,6 +143,7 @@ module.exports = function (io, lightning, lnd, login, pass, limitlogin, limitpas
 	// register the socket listeners
 	var registerSocketListeners = function (socket) {
 		registerLndInvoiceListener(socket);
+		registerBetResultListener(socket);
 		registerCloseChannelListener(socket);
 		registerOpenChannelListener(socket);
 	};
@@ -150,6 +151,7 @@ module.exports = function (io, lightning, lnd, login, pass, limitlogin, limitpas
 	// unregister the socket listeners
 	var unregisterSocketListeners = function (socket) {
 		unregisterLndInvoiceListener(socket);
+		unregisterBetResultListener(socket);
 		//unregisterCloseChannelListener(socket);
 		//unregisterOpenChannelListener(socket);
 	};
@@ -167,6 +169,22 @@ module.exports = function (io, lightning, lnd, login, pass, limitlogin, limitpas
 	// unregister the lnd invoices listener
 	var unregisterLndInvoiceListener = function (socket) {
 		lnd.unregisterInvoiceListener(socket._invoiceListener);
+	};
+
+	// register the dice bet result listener
+	var registerBetResultListener = function (socket) {
+		socket._betresultListener = {
+			socketId: socket.id,
+			resultReceived: function (result) {
+				socket.emit("betresult", result);
+			}
+		};
+		dice.registerBetResultListener(socket._betresultListener);
+	};
+
+	// unregister the lnd invoices listener
+	var unregisterBetResultListener = function (socket) {
+		dice.unregisterBetResultListener(socket._betresultListener);
 	};
 
 	// openchannel

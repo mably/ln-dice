@@ -4,7 +4,7 @@ const debug = require("debug")("lncliweb:zpay32");
 const logger = require("winston");
 const Promise = require("promise");
 const crypto = require("crypto");
-const zbase32 = require ("zbase32");
+const zbase32 = require("zbase32");
 const fastcrc32 = require("fast-crc32c");
 
 // TODO

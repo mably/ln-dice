@@ -103,12 +103,12 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 										}
 									} else {
 										debug("Value sent is not equal to bet amount");
-										var betResultMessage = {
+										var betResultErrMessage = {
 											rid: bet.rid,
 											evt: "error",
 											data: "Value sent is not equal to bet amount"
 										};
-										sendBetResultMessage(bet.sid, betResultMessage);
+										sendBetResultMessage(bet.sid, betResultErrMessage);
 									}
 								} else {
 									debug("Bet [" + memo.hash + "] not found");
@@ -266,9 +266,9 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 	};
 
 	var getMaxAmount = function () {
-		return diceConfig.maxBetAmount
+		return diceConfig.maxBetAmount;
 	};
-	
+
 	var checkInputs = function (amount, factor, reject) {
 		if (factor < getMinFactor()) {
 			reject("Win multiplier can't be lower than " + getMinFactor() + ".");
@@ -301,7 +301,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		identity.nextSeed = nextSeedHex;
 		identity.nextSeedHash = crypto.createHash("sha256").update(nextSeedHex).digest("hex");
 		return identity;
-	}
+	};
 
 	var calculateBetResult = function (amount, factor, choice, serverSeedHex, clientSeedHex) {
 		var betHashHex = generateBetHashHex(serverSeedHex, clientSeedHex);
@@ -324,7 +324,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 			clientseed: clientSeedHex
 		};
 		return result;
-	}
+	};
 
 	module.accountbet = function (account, amount, factor, choice, clientSeedHex, winPayReq) {
 		var promise = new Promise(function (resolve, reject) {
@@ -397,7 +397,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		var array = memoStr.match(re);
 		var memo;
 		if (array && array.length === 3) {
-			memo = { 
+			memo = {
 				type: array[1],
 				hash: array[2]
 			};
@@ -420,7 +420,7 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 					reject(err);
 				} else {
 					logger.debug("LN addInvoice Success:", response);
-					module.dbAddBet({ 
+					module.dbAddBet({
 						hash: hash,
 						betid: betId,
 						sid: sid,

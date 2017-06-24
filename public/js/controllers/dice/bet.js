@@ -94,7 +94,7 @@ module.exports = function ($scope, $uibModalInstance, $timeout, defaults, dice) 
 								return false;
 							} else {
 								$ctrl.betResult = response.data;
-								$ctrl.betResultJSON = JSON.stringify(response.data, null, "\t");	
+								$ctrl.betResultJSON = JSON.stringify(response.data, null, "\t");
 								$ctrl.paymentrequest = null;
 								if (response.data.winamount > 0) {
 									$ctrl.dismissWarning();

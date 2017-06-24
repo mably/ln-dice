@@ -33,10 +33,23 @@
 					</div>
 				</div>
 			</div>
+			<div class="form-group">
+				<label for="bet-winpayreq">Your payout LN payment request</label>
+				<input type="text" class="form-control" id="bet-winpayreq" placeholder="payout LN payment request" ng-model="$ctrl.values.winpayreq">
+			</div>
+			<div class="form-group" ng-show="$ctrl.paymentrequest">
+				<label for="bet-payreq">Use this payment request to make your bet</label>
+				<div class="input-group">
+					<input type="text" class="form-control" id="bet-payreq" placeholder="bet payment request" ng-model="$ctrl.paymentrequest">
+					<div class="input-group-btn">
+						<button type="button" class="btn btn-default" title="Copy to clipboard" aria-label="Copy to clipboard" ngclipboard data-clipboard-text="{{ $ctrl.paymentrequest }}" ngclipboard-success="$ctrl.payreqCopied();" uib-tooltip="Copied!" tooltip-placement="bottom" tooltip-trigger="'none'" tooltip-is-open="$ctrl.payreqCopiedTip"><span class="glyphicon glyphicon-copy" aria-hidden="true"></span></button>
+					</div>
+				</div>
+			</div>
 		</form>
 		<div ng-show="$ctrl.betInfo">
 			<dl class="dl-horizontal" style="overflow-wrap: break-word;">
-				<dt>Win amount (satoshis)</dt>
+				<dt>Win amount</dt>
 				<dd>{{ $ctrl.betInfo.winamount }}</dd>
 				<dt>Target</dt>
 				<dd><strong>&lt; {{ $ctrl.betInfo.threshold }}</strong> (999999 max.)</dd>
@@ -44,14 +57,18 @@
 		</div>
 		<div ng-show="$ctrl.betResult">
 			<dl class="dl-horizontal" style="overflow-wrap: break-word;">
-				<dt>Value found</dt>
+				<dt>Roll result</dt>
 				<dd><betresult-value ng-model="$ctrl.betResult" /></dd>
+				<dt>Server seed</dt>
+				<dd>{{ $ctrl.betResult.serverseed }}</dd>
+				<dt>Client seed</dt>
+				<dd>{{ $ctrl.betResult.clientseed }}</dd>
 			</dl>
-			<pre>{{ $ctrl.betResultJSON }}</pre>
+			<!--<pre>{{ $ctrl.betResultJSON }}</pre>-->
 		</div>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">Bet</button>
+		<button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">Roll dice</button>
 		<button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Close</button>
 	</div>
 <div>

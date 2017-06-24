@@ -96,5 +96,10 @@ module.exports = function ($rootScope, $scope, $timeout, $uibModal, $, dice, con
 		$scope.refresh();
 	});
 
+	$scope.$on(config.events.USER_REFRESHED, function (event, args) {
+		console.log("Received event USER_REFRESHED", event, args);
+		$scope.info = args;
+	});
+
 	$scope.refresh();
 };

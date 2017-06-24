@@ -1,4 +1,4 @@
-// app/routes/dice/tip.js
+// app/routes/dice/bet.js
 
 const debug = require("debug")("lncliweb:routes:dice");
 
@@ -6,14 +6,28 @@ module.exports = function (dice) {
 	return function (req, res) {
 		debug(req.body);
 		if (req.session.account) {
-			dice.sendTip(req.session.account, req.body.userid, req.body.teamid, req.body.amount).then(function (response) {
+			dice.accountbet(req.session.account, req.body.amount, req.body.factor, req.body.choice, req.body.seed).then(function (response) {
 				res.json(response);
 			}, function (err) {
-				debug("sendtip error", err);
+				debug("account bet error", err);
 				res.send({ error: err });
 			});
 		} else {
-			return res.sendStatus(403); // forbidden
+			if (req.body.winpayreq) {
+				if (!req.session.identity) {
+					req.session.identity = dice.initIdentity("anonymous");
+				}
+				dice.lnbet(req.body.sid, req.body.rid, req.session.identity, req.body.amount, req.body.factor, req.body.choice, req.body.seed, req.body.winpayreq).then(function (response) {
+					res.json(response);
+				}, function (err) {
+					debug("ln bet error", err);
+					res.send({ error: err });
+				});
+			} else {
+				var err = "Your payout LN payment request is missing!";
+				debug("ln bet error", err);
+				res.send({ error: err });
+			}
 		}
 	};
 };

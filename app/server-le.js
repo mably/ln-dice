@@ -150,7 +150,7 @@ module.exports = function (program) {
 
 	// setup sockets =================
 	var lndLogfile = program.lndlogfile || defaults.lndLogFile;
-	require("./sockets")(io, lightning, lnd, program.user, program.pwd, program.limituser, program.limitpwd, lndLogfile);
+	require("./sockets")(io, lightning, lnd, dice, program.user, program.pwd, program.limituser, program.limitpwd, lndLogfile);
 
 	// setup routes =================
 	require("./routes")(app, lightning, dice, db);

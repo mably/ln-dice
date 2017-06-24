@@ -1,3 +1,7 @@
 module.exports = {
-	houseEdgeRatio: 0.1 // 10%
+	houseEdgeRatio: 0.1, // 10%
+	minFactor: 1.02,
+	maxFactor: 4,
+	minBetAmount: 10,
+	maxBetAmount: 10000
 };

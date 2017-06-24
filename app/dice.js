@@ -253,11 +253,39 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 		return result;
 	};
 
+	var getMinFactor = function () {
+		return diceConfig.minFactor;
+	};
+
+	var getMaxFactor = function () {
+		return diceConfig.maxFactor;
+	};
+
+	var getMinAmount = function () {
+		return diceConfig.minBetAmount;
+	};
+
+	var getMaxAmount = function () {
+		return diceConfig.maxBetAmount
+	};
+	
+	var checkInputs = function (amount, factor, reject) {
+		if (factor < getMinFactor()) {
+			reject("Win multiplier can't be lower than " + getMinFactor() + ".");
+		} else if (factor > getMaxFactor()) {
+			reject("Win multiplier can't be higher than " + getMaxFactor() + ".");
+		} else if (amount < getMinAmount()) {
+			reject("Bet amount can't be lower than " + getMinAmount() + ".");
+		} else if (amount > getMaxAmount()) {
+			reject("Bet amount can't be higher than " + getMaxAmount() + ".");
+		} else {
+			return true;
+		}
+	};
+
 	module.betInfo = function (identity, amount, factor, choice) {
 		var promise = new Promise(function (resolve, reject) {
-			if (factor < 1.02) {
-				reject("Win multiplier can't be lower than 1.02.");
-			} else {
+			if (checkInputs(amount, factor, reject)) {
 				var result = calculateBetInfo(amount, factor, choice);
 				result.serverseedhash = identity.nextSeedHash;
 				resolve(result);
@@ -321,24 +349,27 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 
 	module.lnbet = function (sid, rid, identity, amount, factor, choice, clientSeedHex, winPayReq) {
 		var promise = new Promise(function (resolve, reject) {
-			var serverSeedHex = identity.nextSeed;
-			updateIdentitySeeds(identity);
-			var betInfo = calculateBetInfo(amount, factor, choice);
-			var decodedPayReq = zpay32.decode(winPayReq);
-			debug("decodedPayReq", decodedPayReq);
-			if (decodedPayReq.value == betInfo.winamount) {
-				module.addBet(sid, rid, amount, factor, choice, serverSeedHex, clientSeedHex, winPayReq).then(function (addBetResult) {
-					debug("addBet", addBetResult);
-					resolve(addBetResult);
-				}, function (err) {
-					debug("addBet error", err);
-					reject(err);
-				});
-			} else {
-				var errMsg = "Your LN payout payment request amount (" + decodedPayReq.value
-						+ ") is not equal to your bet winning amount (" + betInfo.winamount + ").";
-				debug("lnbet error", errMsg);
-				reject(errMsg);
+			if (checkInputs(amount, factor, reject)) {
+				var serverSeedHex = identity.nextSeed;
+				updateIdentitySeeds(identity);
+				var betInfo = calculateBetInfo(amount, factor, choice);
+				var decodedPayReq = zpay32.decode(winPayReq);
+				debug("decodedPayReq", decodedPayReq);
+				if (decodedPayReq.value == betInfo.winamount) {
+					module.addBet(sid, rid, amount, factor, choice,
+							serverSeedHex, clientSeedHex, winPayReq).then(function (addBetResult) {
+						debug("addBet", addBetResult);
+						resolve(addBetResult);
+					}, function (err) {
+						debug("addBet error", err);
+						reject(err);
+					});
+				} else {
+					var errMsg = "Your LN payout payment request amount (" + decodedPayReq.value
+							+ ") is not equal to your bet winning amount (" + betInfo.winamount + ").";
+					debug("lnbet error", errMsg);
+					reject(errMsg);
+				}
 			}
 		});
 		return promise;

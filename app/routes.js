@@ -375,6 +375,21 @@ module.exports = function (app, lightning, dice, db) {
 		});
 	});
 
+	// ln-payreq-auth.html
+	app.get("/ln-payreq-auth.html", function (req, res) {
+		res.send("Payment verified!");
+	});
+
+	// ln-sign-auth.html
+	app.get("/ln-sign-auth.html", function (req, res) {
+		res.send("Signature verified! Authentication message was properly signed by node " + req.userpubkey + ".");
+	});
+
+	// ln-signpayreq-auth.html
+	app.get("/ln-signpayreq-auth.html", function (req, res) {
+		res.send("Payment and signature verified! Authentication message was properly signed by node " + req.userpubkey + ".");
+	});
+
 	// get dice account info
 	app.get("/api/dice/getaccount", require("./routes/dice/getaccount.js")(dice));
 

@@ -30,7 +30,7 @@ module.exports = function (program) {
 	// utilities functions =================
 	const utils = require("./server-utils")(module);
 
-	// setup authentication =================
+	// setup basic authentication =================
 	const basicauth = require("./basicauth")(program.user, program.pwd, program.limituser, program.limitpwd).filter;
 
 	// db init =================
@@ -44,6 +44,13 @@ module.exports = function (program) {
 
 	// init dice module =================
 	const dice = require("./dice")(lightning, lnd, db, module, require("../config/dice-config"));
+
+	// setup LN payment request authentication =================
+	const lnpayreqauth = require("./lnpayreqauth")(lightning, config).filter;
+	// setup LN signature authentication =================
+	const lnsignauth = require("./lnsignauth")(lightning, config).filter;
+	// setup combined LN signature and payment authentication =================
+	const lnsignpayreqauth = require("./lnsignpayreqauth")(lightning, config).filter;
 
 	// Storage Backend
 	var leStore = require("le-store-certbot").create({
@@ -122,7 +129,10 @@ module.exports = function (program) {
 
 	// app configuration =================
 	app.use(require("./cors"));                                     // enable CORS headers
-	app.use(["/lnd.html", "/api/lnd/"], basicauth);                 // enable basic authentication for lnd dashboard and apis
+	app.use(["/lnd.html", "/api/lnd/"], basicauth);                 // enable basic authentication for lnd apis
+	app.use(["/ln-payreq-auth.html"], lnpayreqauth);                // enable LN payment request authentication for specific test page
+	app.use(["/ln-sign-auth.html"], lnsignauth);                    // enable LN signature authentication for specific test page
+	app.use(["/ln-signpayreq-auth.html"], lnsignpayreqauth);        // enable combined LN payment and signature authentication
 	app.use(express.static(__dirname + "/../public"));              // set the static files location /public/img will be /img for users
 	app.use(bodyParser.urlencoded({ extended: "true" }));           // parse application/x-www-form-urlencoded
 	app.use(bodyParser.json());                                     // parse application/json
@@ -131,7 +141,7 @@ module.exports = function (program) {
 	// error handler
 	app.use(function (err, req, res, next) {
 		// Do logging and user-friendly error message display
-		winston.error(err);
+		logger.error(err);
 		res.status(500).send({ status: 500, message: "internal error", type: "internal" });
 	});
 

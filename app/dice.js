@@ -80,26 +80,40 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 								if (bet) {
 									var value = parseInt(data.value);
 									if (bet.amount == data.value) {
-										var betResult = calculateBetResult(
-												bet.amount, bet.factor, bet.choice, bet.serverseed, bet.clientseed);
-										var betResultMessage = {
-											rid: bet.rid,
-											evt: "data",
-											data: betResult
-										};
-										sendBetResultMessage(bet.sid, betResultMessage);
-										if (betResult.winamount > 0) {
-											var paymentRequest = { payment_request: bet.winpayreq };
-											lightning.sendPaymentSync(paymentRequest, function (err, response) {
-												if (err) {
-													logger.debug("SendPayment Error:", err);
-													err.error = err.message;
-												} else {
-													logger.debug("SendPayment Success:", response);
-												}
-											});
+										if (bet.processed) {
+											debug("Your bet has already been processed");
+											var betResultErrMessage = {
+												rid: bet.rid,
+												evt: "error",
+												data: "Your bet has already been processed"
+											};
+											sendBetResultMessage(bet.sid, betResultErrMessage);
 										} else {
-											debug("Losing bet");
+											module.dbProcessBet(memo.hash).then(function (processResult) {
+												var betResult = calculateBetResult(
+														bet.amount, bet.factor, bet.choice, bet.serverseed, bet.clientseed);
+												var betResultMessage = {
+													rid: bet.rid,
+													evt: "data",
+													data: betResult
+												};
+												sendBetResultMessage(bet.sid, betResultMessage);
+												if (betResult.winamount > 0) {
+														var paymentRequest = { payment_request: bet.winpayreq };
+														lightning.sendPaymentSync(paymentRequest, function (err, response) {
+															if (err) {
+																logger.debug("SendPayment Error:", err);
+																err.error = err.message;
+															} else {
+																logger.debug("SendPayment Success:", response);
+															}
+														});
+												} else {
+													debug("Losing bet");
+												}
+											}, function (err) {
+												debug("dbGetBet error", err);
+											});
 										}
 									} else {
 										debug("Value sent is not equal to bet amount");
@@ -635,6 +649,25 @@ module.exports = function (lightning, lnd, db, server, diceConfig) {
 				} else {
 					logger.debug("AddBet DB insert:", result);
 					resolve(result);
+				}
+			});
+		});
+		return promise;
+	};
+
+	module.dbProcessBet = function (betHash) {
+		var promise = new Promise(function (resolve, reject) {
+			var now = new Date();
+			lnbetsCol.update({ hash: betHash, processed: { $exists: false } }, { $set: { processed: now } }, { w: 1 }, function (err, result) {
+				if (err) {
+					reject(err);
+				} else {
+					logger.debug("dbProcessBet DB update", result);
+					if (result === 1) {
+						resolve(result);
+					} else {
+						reject("Bet unknown or already processed.");
+					}
 				}
 			});
 		});

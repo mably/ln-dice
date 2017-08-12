@@ -197,11 +197,9 @@ module.exports = function (io, lightning, lnd, dice, login, pass, limitlogin, li
 			} else {
 				try {
 					var openChannelRequest = {
-						//node_pubkey_string: data.pubkey,
 						node_pubkey: BufferUtil.hexToBuffer(data.pubkey),
 						local_funding_amount: Number(data.localamt),
-						push_sat: Number(data.pushamt),
-						num_confs: Number(data.numconf)
+						push_sat: Number(data.pushamt)
 					};
 					debug("openChannelRequest", openChannelRequest);
 
